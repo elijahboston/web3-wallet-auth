@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { NextApiHandler } from "next";
-import { users } from "../../users-db";
+import UserStore from "../../users-db";
 import { toUtf8Bytes, verifyMessage } from "ethers/lib/utils";
 
 const auth: NextApiHandler = (
@@ -19,7 +19,7 @@ const auth: NextApiHandler = (
   const signature = req.body.signature;
 
   // Lookup user
-  let user = users[req.body.publicAddress];
+  let user = UserStore.get(req.body.publicAddress);
 
   if (user) {
     const recoveredAddress = verifyMessage(toUtf8Bytes(user.nonce), signature);

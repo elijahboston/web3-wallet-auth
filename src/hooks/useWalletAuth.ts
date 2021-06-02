@@ -58,34 +58,14 @@ export const useWalletAuth = () => {
       try {
         const data = await registerAccount(account);
 
-        console.log("RESP", data);
-
         if (data.nonce) {
-          console.log("signing", account, data.nonce);
-          try {
-            // sign login message
-            const msg = `${data.nonce}`;
+          // sign login message
+          const msg = `${data.nonce}`;
+          const signature = await library.getSigner(account).signMessage(msg);
+          const loginResp = await loginAccount(account, signature);
 
-            // @ts-ignore
-            // const signature = await window.ethereum.request({
-            //   method: "personal_sign",
-            //   params,
-            // });
-            const signature = await library.getSigner(account).signMessage(msg);
-
-            console.log("NONCE CLIENT", data.nonce);
-
-            console.log("signature", signature);
-
-            const loginResp = await loginAccount(account, signature);
-
-            console.log("loginResp", loginResp);
-
-            if (loginResp.status === "ok") {
-              return true;
-            }
-          } catch {
-            return false;
+          if (loginResp.status === "ok") {
+            return true;
           }
         }
       } catch (err) {
