@@ -5,33 +5,29 @@ import { useWeb3React } from "@web3-react/core";
 import { Web3Provider } from "@ethersproject/providers";
 import { useEagerConnect, useInactiveListener } from "./web3";
 import { injected } from "../connectors";
+import { api } from "../util/api";
 
 const debug = Debug("use-wallet");
 
 const registerAccount = (account: string) =>
-  fetch("/api/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      publicAddress: account,
-    }),
-  }).then((resp) => resp.json());
+  api("register", {
+    publicAddress: account,
+  });
 
 const loginAccount = (account: string, signature: string) =>
-  fetch("/api/auth", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      publicAddress: account,
-      signature,
-    }),
-  }).then((resp) => resp.json());
+  api("auth", {
+    publicAddress: account,
+    signature,
+  });
+
+const validate = (token: string) =>
+  api("validate", {
+    token,
+  });
 
 export const useWalletAuth = () => {
+  const [token, setToken] = useState<string | undefined>();
+  const [valid, setValid] = useState<boolean>(false);
   const { library, account, connector, activate } =
     useWeb3React<Web3Provider>();
 
@@ -50,12 +46,15 @@ export const useWalletAuth = () => {
   useInactiveListener(!triedEager || !!activatingConnector);
 
   return {
+    token,
+    valid,
     connectWallet: () => {
       setActivatingConnector(injected);
       activate(injected);
     },
     login: async () => {
       try {
+        // Register a new account or retrieve the nonce for an existing one
         const data = await registerAccount(account);
 
         if (data.nonce) {
@@ -64,12 +63,30 @@ export const useWalletAuth = () => {
           const signature = await library.getSigner(account).signMessage(msg);
           const loginResp = await loginAccount(account, signature);
 
-          if (loginResp.status === "ok") {
+          if (loginResp.status === "ok" && loginResp.token) {
+            setToken(loginResp.token);
+            setValid(true);
             return true;
           }
         }
       } catch (err) {
         console.error(err);
+        return false;
+      }
+    },
+    validate: async (token: string) => {
+      try {
+        // Register a new account or retrieve the nonce for an existing one
+        const data = await validate(token);
+
+        if (data.status === "ok") {
+          setValid(true);
+        } else {
+          setValid(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setValid(false);
         return false;
       }
     },

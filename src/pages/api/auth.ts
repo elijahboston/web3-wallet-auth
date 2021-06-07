@@ -4,7 +4,8 @@ import { NextApiHandler } from "next";
 import UserStore from "../../users-db";
 import { toUtf8Bytes, verifyMessage } from "ethers/lib/utils";
 import jwt from "jsonwebtoken";
-import { generateNonce } from "../../api-util/generateNonce";
+import { generateNonce } from "../../util-api/generateNonce";
+import { JWT_SIGNING_KEY } from "../../constants";
 
 const auth: NextApiHandler = (
   req: { body: { publicAddress: string; signature: string } },
@@ -29,12 +30,17 @@ const auth: NextApiHandler = (
     UserStore.update(req.body.publicAddress, { nonce: generateNonce() });
     if (recoveredAddress === publicAddress) {
       // TODO: generate JWT
-      // const token = jwt.sign({}, 'key', {
-      //   expiresIn: '24h',
-      //   subject: req.body.publicAddress
-      //   channels: []
-      // })
-      res.json({ status: "ok", token: jwt });
+      const token = jwt.sign(
+        {
+          sub: req.body.publicAddress,
+          channels: [],
+        },
+        JWT_SIGNING_KEY,
+        {
+          expiresIn: "24h",
+        }
+      );
+      res.json({ status: "ok", token });
     } else {
       res.status(401).json({ status: "error", message: "Access denied" });
     }

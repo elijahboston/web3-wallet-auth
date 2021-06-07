@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { NextApiHandler } from "next";
-import { generateNonce } from "../../api-util/generateNonce";
+import { generateNonce } from "../../util-api/generateNonce";
 import UserStore from "../../users-db";
 
 const register: NextApiHandler = (

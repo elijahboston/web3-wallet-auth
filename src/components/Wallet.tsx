@@ -1,6 +1,6 @@
 import { useWeb3React } from "@web3-react/core";
 import { Web3Provider } from "@ethersproject/providers";
-import React, { ButtonHTMLAttributes, useState } from "react";
+import React, { ButtonHTMLAttributes, useEffect, useState } from "react";
 import { useWalletAuth } from "../hooks/useWalletAuth";
 
 const Button = (props: React.ButtonHTMLAttributes<HTMLElement>) => (
@@ -12,7 +12,19 @@ export const Wallet = () => {
   const { deactivate, active, error, account } = context;
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  const { login, connectWallet } = useWalletAuth();
+  const {
+    login,
+    connectWallet,
+    validate,
+    valid,
+    token: fetchedToken,
+  } = useWalletAuth();
+  const [token, setToken] = useState<string>(fetchedToken);
+
+  // Update local token if login status changes
+  useEffect(() => {
+    setToken(fetchedToken);
+  }, [fetchedToken]);
 
   return (
     <div
@@ -76,6 +88,22 @@ export const Wallet = () => {
       {active && isLoggedIn && (
         <div id="logged-in">
           <h1>🚀 We have verified that you are the owner of this wallet</h1>
+          <h2>
+            Token: {valid && `✅ Valid`}
+            {!valid && `❌ Invalid`}
+          </h2>
+          <div>
+            <textarea
+              style={{ width: "100%", margin: "1rem 0", padding: "2rem" }}
+              value={token}
+              onChange={(e) =>
+                e.currentTarget.value !== token &&
+                setToken(e.currentTarget.value)
+              }
+            />
+            <Button onClick={() => validate(token)}>Validate token</Button>
+            <Button onClick={() => setToken(fetchedToken)}>Reset</Button>
+          </div>
         </div>
       )}
     </div>
