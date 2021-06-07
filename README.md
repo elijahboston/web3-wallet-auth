@@ -2,8 +2,10 @@
 
 Proof of concept password-less login with web3.
 
-1. We connect a browser wallet like Metamask, which gives us the public wallet address and access to the Ethreum JSON RPC.
-2. Using the public wallet address we lookup the user account or create one, and return a nonce.
-3. The user signs a message containing the nonce with their private keys.
-4. We recover the public address of the signed message, and verify that it matches the public wallet address we have in our database.
-5. If the addresses match, we have successfully verified the user.
+Instead of using a traditional username and password combo, we use a crypto wallet like Metamask as a key-signing tool.
+
+## Overview
+
+Connecting a wallet only provides us with a public wallet address. In order to verify the user actually controls the connected account at the moment of login, we need them to sign a message containing a one-time hash.
+
+Once they sign that message, the server can then use that signature to recover the public address of the signer, which we would expect to match the public address of the connected wallet. At that point we can then return a signed token.
