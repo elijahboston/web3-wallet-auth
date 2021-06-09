@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { NextApiHandler } from "next";
-import UserStore from "../../users-db";
+import UserStore, { _data } from "../../users-db";
 import { toUtf8Bytes, verifyMessage } from "ethers/lib/utils";
 import jwt from "jsonwebtoken";
 import { generateNonce } from "../../util-api/generateNonce";
@@ -28,6 +28,7 @@ const auth: NextApiHandler = (
     const recoveredAddress = verifyMessage(toUtf8Bytes(user.nonce), signature);
     // Regenerate nonce
     UserStore.update(req.body.publicAddress, { nonce: generateNonce() });
+
     if (recoveredAddress === publicAddress) {
       // TODO: generate JWT
       const token = jwt.sign(

@@ -6,6 +6,7 @@ import { Web3Provider } from "@ethersproject/providers";
 import { useEagerConnect, useInactiveListener } from "./web3";
 import { injected } from "../connectors";
 import { api } from "../util/api";
+import { useConnector } from "./useConnector";
 
 const debug = Debug("use-wallet");
 
@@ -27,32 +28,22 @@ const validate = (token: string) =>
 
 export const useWalletAuth = () => {
   const [token, setToken] = useState<string | undefined>();
-  const [valid, setValid] = useState<boolean>(false);
-  const { library, account, connector, activate } =
-    useWeb3React<Web3Provider>();
-
-  // handle logic to recognize the connector currently being activated
-  const [activatingConnector, setActivatingConnector] = useState<any>();
-  useEffect(() => {
-    if (activatingConnector && activatingConnector === connector) {
-      setActivatingConnector(undefined);
-    }
-  }, [activatingConnector, connector]);
-
-  // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  const triedEager = useEagerConnect();
-
-  // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
-  useInactiveListener(!triedEager || !!activatingConnector);
+  const [isTokenValid, setIsTokenValid] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { library, account, deactivate } = useWeb3React<Web3Provider>();
 
   return {
     token,
-    valid,
-    connectWallet: () => {
-      setActivatingConnector(injected);
-      activate(injected);
+    isTokenValid,
+    isLoggedIn,
+    logout: () => {
+      deactivate();
+      setIsLoggedIn(false);
     },
     login: async () => {
+      if (!account) {
+        return false;
+      }
       try {
         // Register a new account or retrieve the nonce for an existing one
         const data = await registerAccount(account);
@@ -65,8 +56,9 @@ export const useWalletAuth = () => {
 
           if (loginResp.status === "ok" && loginResp.token) {
             setToken(loginResp.token);
-            setValid(true);
-            return true;
+            setIsLoggedIn(true);
+            setIsTokenValid(true);
+            return false;
           }
         }
       } catch (err) {
@@ -75,18 +67,23 @@ export const useWalletAuth = () => {
       }
     },
     validate: async (token: string) => {
+      if (!token) {
+        return false;
+      }
       try {
         // Register a new account or retrieve the nonce for an existing one
         const data = await validate(token);
 
         if (data.status === "ok") {
-          setValid(true);
+          setIsTokenValid(true);
+          return true;
         } else {
-          setValid(false);
+          setIsTokenValid(false);
+          return false;
         }
       } catch (err) {
         console.error(err);
-        setValid(false);
+        setIsTokenValid(false);
         return false;
       }
     },

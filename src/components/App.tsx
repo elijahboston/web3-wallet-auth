@@ -3,16 +3,14 @@ import { Web3ReactProvider } from "@web3-react/core";
 import { Web3Provider } from "@ethersproject/providers";
 import dynamic from "next/dynamic";
 
-const WalletDynamic = dynamic<{}>(
-  import("../../components/Wallet").then((mod) => mod.Wallet)
-);
+const WalletDynamic = dynamic<{}>(import("./Wallet").then((mod) => mod.Wallet));
 const getLibrary = (provider: any) => {
   const library = new Web3Provider(provider);
   library.pollingInterval = 12000;
   return library;
 };
 
-export default function Home() {
+export default function App() {
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
       <div

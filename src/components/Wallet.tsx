@@ -2,6 +2,8 @@ import { useWeb3React } from "@web3-react/core";
 import { Web3Provider } from "@ethersproject/providers";
 import React, { ButtonHTMLAttributes, useEffect, useState } from "react";
 import { useWalletAuth } from "../hooks/useWalletAuth";
+import { useConnector } from "../hooks/useConnector";
+import { injected } from "../connectors";
 
 const Button = (props: React.ButtonHTMLAttributes<HTMLElement>) => (
   <button {...props} style={{ padding: "1rem 2rem", fontSize: "1.2rem" }} />
@@ -9,16 +11,18 @@ const Button = (props: React.ButtonHTMLAttributes<HTMLElement>) => (
 
 export const Wallet = () => {
   const context = useWeb3React<Web3Provider>();
-  const { deactivate, active, error, account } = context;
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const { error, active } = context;
+  const connectWallet = useConnector(injected);
 
   const {
     login,
-    connectWallet,
+    logout,
     validate,
-    valid,
+    isTokenValid,
+    isLoggedIn,
     token: fetchedToken,
   } = useWalletAuth();
+
   const [token, setToken] = useState<string>(fetchedToken);
 
   // Update local token if login status changes
@@ -57,26 +61,14 @@ export const Wallet = () => {
       <div id="connected">
         {(active || error) && (
           <>
-            <Button
-              onClick={() => {
-                deactivate();
-              }}
-            >
-              ❌ Deactivate
-            </Button>
+            <Button onClick={() => logout()}>❌ Deactivate</Button>
           </>
         )}
 
         {/* In a real application, the user would be provided a JWT on successful login. */}
         {active && (
           <>
-            <Button
-              disabled={isLoggedIn}
-              onClick={async () => {
-                const authed = await login();
-                setIsLoggedIn(authed);
-              }}
-            >
+            <Button disabled={isLoggedIn} onClick={() => login()}>
               {!isLoggedIn && `🚀 Login`}
               {isLoggedIn && `✅ Authenticated`}
             </Button>
@@ -85,12 +77,12 @@ export const Wallet = () => {
       </div>
 
       {/* If everything goes well we will have sucessfully authenticated the user of this wallet */}
-      {active && isLoggedIn && (
+      {isLoggedIn && (
         <div id="logged-in">
           <h1>🚀 We have verified that you are the owner of this wallet</h1>
           <h2>
-            Token: {valid && `✅ Valid`}
-            {!valid && `❌ Invalid`}
+            Token: {isTokenValid && `✅ Valid`}
+            {!isTokenValid && `❌ Invalid`}
           </h2>
           <div>
             <textarea

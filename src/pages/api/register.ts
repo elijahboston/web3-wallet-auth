@@ -2,7 +2,7 @@
 
 import { NextApiHandler } from "next";
 import { generateNonce } from "../../util-api/generateNonce";
-import UserStore from "../../users-db";
+import UserStore, { _data } from "../../users-db";
 
 const register: NextApiHandler = (
   req: { body: { publicAddress: string } },
@@ -21,14 +21,14 @@ const register: NextApiHandler = (
   if (!user) {
     const nonce = generateNonce();
 
-    UserStore.update(publicAddress, { nonce });
+    UserStore.add(publicAddress, { nonce });
 
     res.json({ status: "ok", message: `Registered ${publicAddress}`, nonce });
   } else {
     res.send({
       status: "ok",
       message: `Already registered`,
-      nonce: user,
+      nonce: user.nonce,
     });
   }
 

@@ -2,6 +2,7 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import React from "react";
 import Link from "next/link";
+import App from "../components/App";
 
 export default function Home() {
   return (
@@ -13,8 +14,8 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1>Wallet Auth</h1>
-        <Link href="/app">Enter</Link>
+        <h1>Wallet Auth Demo</h1>
+        <App />
       </main>
     </div>
   );

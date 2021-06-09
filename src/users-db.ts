@@ -2,7 +2,7 @@ interface User {
   nonce: string;
 }
 
-const _data: Record<string, User> = {};
+export const _data: Record<string, User> = {};
 
 const UserStore = {
   add: (id: string, user: User) => (_data[id] = user),
