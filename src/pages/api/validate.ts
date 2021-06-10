@@ -1,10 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
 import { NextApiHandler } from "next";
-import UserStore from "../../users-db";
-import { toUtf8Bytes, verifyMessage } from "ethers/lib/utils";
 import jwt from "jsonwebtoken";
-import { generateNonce } from "../../util-api/generateNonce";
 import { JWT_SIGNING_KEY } from "../../constants";
 
 const validate: NextApiHandler = async (
