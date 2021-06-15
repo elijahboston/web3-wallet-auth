@@ -7,20 +7,15 @@ const validate: NextApiHandler = async (
   res
 ) => {
   if (!req.body || !req.body.token) {
-    res.status(500).json({
-      status: "error",
-      message: "Error - no token provided",
-    });
+    res.status(401).json({ status: "no token" });
   }
 
+  // Check that this token was signed with our key
   return jwt.verify(req.body.token, JWT_SIGNING_KEY, (err, decoded) => {
     if (!err && decoded) {
       res.json({ status: "ok" });
     } else {
-      res.status(401).json({
-        status: "error",
-        message: "Invalid token",
-      });
+      res.status(401).json({ status: "bad token" });
     }
   });
 };
