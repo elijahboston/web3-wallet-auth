@@ -65,7 +65,7 @@ const auth: NextApiHandler = async (req, res) => {
     }
   }
 
-  res.status(401).json({ status: "unauthorized" });
+  res.status(401);
 };
 
 export default auth;

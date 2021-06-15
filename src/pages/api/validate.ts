@@ -7,7 +7,7 @@ const validate: NextApiHandler = async (
   res
 ) => {
   if (!req.body || !req.body.token) {
-    res.status(401).json({ status: "no token" });
+    res.status(401);
   }
 
   // Check that this token was signed with our key
@@ -15,7 +15,7 @@ const validate: NextApiHandler = async (
     if (!err && decoded) {
       res.json({ status: "ok" });
     } else {
-      res.status(401).json({ status: "bad token" });
+      res.json({ status: "bad token" });
     }
   });
 };
